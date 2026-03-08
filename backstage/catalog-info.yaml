@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: gitops-developer-platform
+  description: Backstage front door for the GitOps developer platform.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: website
+  owner: group:default/platform-team
+  lifecycle: experimental
+  system: gitops-developer-platform

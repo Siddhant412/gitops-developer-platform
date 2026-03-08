@@ -1,0 +1,7 @@
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: developer-productivity
+  description: Platform capabilities that improve the engineering delivery experience.
+spec:
+  owner: group:default/platform-team

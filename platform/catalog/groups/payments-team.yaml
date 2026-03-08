@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: payments-team
+  description: Example application team that will consume platform golden paths.
+spec:
+  type: team
+  profile:
+    displayName: Payments Team
+  children: []

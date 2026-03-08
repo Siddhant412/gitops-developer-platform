@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+  description: Guest user for local Backstage development.
+spec:
+  profile:
+    displayName: Guest User
+  memberOf:
+    - platform-team

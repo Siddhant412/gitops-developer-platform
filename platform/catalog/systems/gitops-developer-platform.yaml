@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: gitops-developer-platform
+  description: Internal developer platform for service creation, GitOps delivery, and governance.
+spec:
+  owner: group:default/platform-team
+  domain: developer-productivity
