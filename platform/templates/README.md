@@ -1,6 +1,6 @@
 # Golden Path Templates
 
-This directory will hold the approved scaffolder templates for Phase 1:
+This directory holds the approved scaffolder templates for Phase 1:
 
 - `node-api/`
 - `python-worker/`
@@ -12,4 +12,4 @@ Each template directory should eventually contain:
 - `README.md`
 - `skeleton/`
 
-The `node-api` template should be the first fully implemented golden path.
+`node-api` is the first implemented golden path. The other template directories remain placeholders for the next implementation passes.

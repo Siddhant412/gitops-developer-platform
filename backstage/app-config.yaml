@@ -83,10 +83,9 @@ catalog:
     - type: file
       target: ../../../platform/catalog/all.yaml
 
-    # Keep the stock template until the platform templates under
-    # `../../../platform/templates` are implemented.
+    # Platform golden path templates.
     - type: file
-      target: ../../examples/template/template.yaml
+      target: ../../../platform/templates/node-api/template.yaml
       rules:
         - allow: [Template]
 

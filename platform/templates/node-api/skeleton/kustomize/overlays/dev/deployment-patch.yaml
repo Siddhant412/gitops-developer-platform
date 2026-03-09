@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.name }}
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: ${{ values.name }}
+          env:
+            - name: NODE_ENV
+              value: development

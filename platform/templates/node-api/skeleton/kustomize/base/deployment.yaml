@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.name }}
+  labels:
+    app.kubernetes.io/name: ${{ values.name }}
+    app.kubernetes.io/component: api
+    app.kubernetes.io/managed-by: backstage-scaffolder
+    backstage.io/kubernetes-id: ${{ values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${{ values.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${{ values.name }}
+        app.kubernetes.io/component: api
+        backstage.io/kubernetes-id: ${{ values.name }}
+    spec:
+      containers:
+        - name: ${{ values.name }}
+          image: ghcr.io/${{ values.repoOwner }}/${{ values.name }}:latest
+          ports:
+            - name: http
+              containerPort: ${{ values.port }}
+          env:
+            - name: PORT
+              value: "${{ values.port }}"
+            - name: NODE_ENV
+              value: production
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
