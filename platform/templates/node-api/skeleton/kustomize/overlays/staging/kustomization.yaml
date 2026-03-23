@@ -5,6 +5,3 @@ resources:
   - ../../base
 patches:
   - path: deployment-patch.yaml
-images:
-  - name: ghcr.io/${{ values.repoOwner }}/${{ values.name }}
-    newTag: staging

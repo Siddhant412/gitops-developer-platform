@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: ${{ values.name }}
-          image: ghcr.io/${{ values.repoOwner }}/${{ values.name }}:latest
+          image: ghcr.io/${{ values.repoOwner | lower }}/${{ values.repoName | lower }}:latest
           ports:
             - name: http
               containerPort: ${{ values.port }}

@@ -21,6 +21,15 @@ The service listens on port `${{ values.port }}` by default and exposes:
 npm test
 ```
 
+## Container Image
+
+Pushes to `main` publish a container image to:
+
+- `ghcr.io/<owner>/<repo>:latest`
+- `ghcr.io/<owner>/<repo>:<git-sha>`
+
+The published image path is normalized to lowercase to satisfy GHCR naming rules.
+
 ## Repository Layout
 
 - `src/` contains the application entrypoint and server setup
