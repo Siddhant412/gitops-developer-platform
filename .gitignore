@@ -23,6 +23,7 @@ coverage/
 !.env.example
 !.env.*.example
 *.local.yaml
+*.local.yaml.bak
 *-credentials.yaml
 *.secrets.yaml
 *.secret.yaml
@@ -34,6 +35,11 @@ dist/
 dist-types/
 .cache/
 site/
+backstage/*.sqlite
+backstage/*.sqlite-shm
+backstage/*.sqlite-wal
+backstage/backstage-db/
+backstage/packages/backend/backstage-db/
 
 # Yarn
 **/.yarn/*

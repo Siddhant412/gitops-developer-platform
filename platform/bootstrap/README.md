@@ -4,7 +4,7 @@ This directory holds local environment bootstrap assets.
 
 - `kind/` for local Kubernetes cluster creation
 - `argocd/` for Argo CD install and application bootstrap
-- `backstage/` for Backstage deployment manifests used outside local `yarn start`
+- `backstage/` for local Backstage Kubernetes access and deployment manifests used outside local `yarn start`
 
 ## Local Bootstrap Flow
 
@@ -41,6 +41,12 @@ This directory holds local environment bootstrap assets.
      --path kustomize/overlays/dev \
      --namespace dev \
      --apply
+   ```
+
+6. Configure local Backstage Kubernetes access:
+
+   ```bash
+   ./platform/bootstrap/backstage/configure-local-kubernetes.sh
    ```
 
 `kind` and `argocd` CLIs are expected to be installed locally. `kubectl` and Docker must also be available.
