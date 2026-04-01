@@ -29,6 +29,7 @@ Pushes to `main` publish a container image to:
 - `ghcr.io/<owner>/<repo>:<git-sha>`
 
 The published image path is normalized to lowercase to satisfy GHCR naming rules.
+Images are published for both `linux/amd64` and `linux/arm64` so they can run on common cloud nodes and local Apple Silicon clusters.
 
 ## Repository Layout
 

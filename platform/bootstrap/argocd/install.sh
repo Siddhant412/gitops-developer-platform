@@ -28,9 +28,11 @@ EOF
 fi
 
 kubectl --context "${KUBECONTEXT}" create namespace argocd --dry-run=client -o yaml | kubectl --context "${KUBECONTEXT}" apply -f -
-kubectl --context "${KUBECONTEXT}" apply -n argocd -f "${ARGOCD_INSTALL_URL}"
+# Use server-side apply so large CRDs do not overflow the kubectl last-applied annotation.
+kubectl --context "${KUBECONTEXT}" apply --server-side --force-conflicts -n argocd -f "${ARGOCD_INSTALL_URL}"
 kubectl --context "${KUBECONTEXT}" wait --for=condition=Established crd/appprojects.argoproj.io --timeout=120s
 kubectl --context "${KUBECONTEXT}" wait --for=condition=Established crd/applications.argoproj.io --timeout=120s
+kubectl --context "${KUBECONTEXT}" wait --for=condition=Established crd/applicationsets.argoproj.io --timeout=120s
 kubectl --context "${KUBECONTEXT}" rollout status deployment/argocd-server -n argocd --timeout=300s
 kubectl --context "${KUBECONTEXT}" apply -k "${BOOTSTRAP_KUSTOMIZE_DIR}"
 
