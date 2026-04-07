@@ -1,6 +1,6 @@
 # GitOps Examples
 
-This directory models the GitOps control-plane content that Argo CD consumes.
+This directory models the old in-repo GitOps control-plane content that Argo CD consumed before the dedicated environment repo was introduced.
 
 ## Layout
 
@@ -13,4 +13,4 @@ For early local development, the bootstrap resources can be applied directly wit
 kubectl apply -k platform/gitops-examples/bootstrap
 ```
 
-Later, when this repo is hosted in Git, Argo CD can point at `platform/gitops-examples/bootstrap` as a root application path.
+For the current project flow, prefer the separate `gitops-platform-environments` repo and its `bootstrap/` plus `argocd/applications/` directories instead.

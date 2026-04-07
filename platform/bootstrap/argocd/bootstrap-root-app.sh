@@ -4,23 +4,28 @@ set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-idp-dev}"
 KUBECONTEXT="${KUBECONTEXT:-kind-${CLUSTER_NAME}}"
+APP_NAME="${APP_NAME:-platform-environments-root}"
 REPO_URL=""
 REVISION="${REVISION:-HEAD}"
-PATH_IN_REPO="${PATH_IN_REPO:-platform/gitops-examples/bootstrap}"
+PATH_IN_REPO="${PATH_IN_REPO:-argocd/applications}"
 
 usage() {
   cat <<'EOF'
 Usage:
-  bootstrap-root-app.sh --repo-url <git repo url> [--revision HEAD] [--path platform/gitops-examples/bootstrap]
+  bootstrap-root-app.sh --repo-url <git repo url> [--name platform-environments-root] [--revision HEAD] [--path argocd/applications]
 
 Example:
   ./platform/bootstrap/argocd/bootstrap-root-app.sh \
-    --repo-url https://github.com/<owner>/gitops-developer-platform.git
+    --repo-url https://github.com/<owner>/gitops-platform-environments.git
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --name)
+      APP_NAME="$2"
+      shift 2
+      ;;
     --repo-url)
       REPO_URL="$2"
       shift 2
@@ -54,7 +59,7 @@ cat <<EOF | kubectl --context "${KUBECONTEXT}" apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-bootstrap
+  name: ${APP_NAME}
   namespace: argocd
 spec:
   project: default

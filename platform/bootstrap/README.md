@@ -14,7 +14,7 @@ This directory holds local environment bootstrap assets.
    ./platform/bootstrap/kind/create-cluster.sh
    ```
 
-2. Install Argo CD and apply the local GitOps bootstrap resources:
+2. Install Argo CD and apply the local platform bootstrap resources:
 
    ```bash
    ./platform/bootstrap/argocd/install.sh
@@ -32,18 +32,16 @@ This directory holds local environment bootstrap assets.
    ./platform/bootstrap/argocd/get-admin-password.sh
    ```
 
-5. Register a generated service repo as an Argo CD `Application`:
+5. Apply the shared environment repo bootstrap once. This creates namespaces, the `platform-dev` Argo CD project, and the root app that watches `argocd/applications/` in the env repo:
 
    ```bash
-   ./platform/bootstrap/argocd/register-generated-app.sh \
-     --app-name payments-api-dev \
-     --repo-url https://github.com/<owner>/payments-api.git \
-     --path kustomize/overlays/dev \
-     --namespace dev \
-     --apply
+   cd /path/to/gitops-platform-environments
+   kubectl apply -k bootstrap --context kind-idp-dev
    ```
 
-6. Configure local Backstage Kubernetes access:
+6. After that, new services only need to commit Argo `Application` manifests into `argocd/applications/`; the root app discovers them automatically.
+
+7. Configure local Backstage Kubernetes access:
 
    ```bash
    ./platform/bootstrap/backstage/configure-local-kubernetes.sh
