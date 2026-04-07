@@ -12,4 +12,4 @@ Each template directory should eventually contain:
 - `README.md`
 - `skeleton/`
 
-`node-api` is the first implemented golden path. The other template directories remain placeholders for the next implementation passes.
+`node-api` is the first implemented golden path. It now scaffolds GHCR publishing plus the default shared-GitOps-repo deployment flow. The other template directories remain placeholders for the next implementation passes.

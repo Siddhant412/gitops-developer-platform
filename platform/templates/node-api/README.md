@@ -9,8 +9,9 @@ This template currently scaffolds:
 - `catalog-info.yaml`
 - TechDocs starter files
 - `Dockerfile` and `.dockerignore`
-- GitHub Actions CI workflow
+- GitHub Actions CI workflow with GHCR publishing
 - Kustomize base plus `dev` and `staging` overlays
+- GitOps repo update/bootstrap script for shared environment repos
 
 Inputs collected in Backstage:
 
@@ -20,9 +21,8 @@ Inputs collected in Backstage:
 - system
 - service port
 - GitHub repository location
+- GitOps environment repository location
 
 Next additions for this template:
 
-- image publishing to GHCR
-- GitOps repo update step
 - security scanning

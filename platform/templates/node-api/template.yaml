@@ -3,7 +3,7 @@ kind: Template
 metadata:
   name: node-api
   title: Node API
-  description: Scaffold a Fastify-based Node.js API with TechDocs, CI, Docker, and Kustomize overlays.
+  description: Scaffold a Fastify-based Node.js API with TechDocs, GHCR publishing, and a separate GitOps repo deployment flow.
   tags:
     - recommended
     - node
@@ -55,11 +55,20 @@ spec:
     - title: Repository
       required:
         - repoUrl
+        - gitopsRepoUrl
       properties:
         repoUrl:
           title: GitHub repository
           type: string
           description: Destination repository for the generated service.
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        gitopsRepoUrl:
+          title: GitOps environment repository
+          type: string
+          description: Shared GitOps repo that Argo CD watches for deployment state.
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
@@ -80,6 +89,8 @@ spec:
           port: ${{ parameters.port }}
           repoOwner: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
           repoName: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          gitopsRepoOwner: ${{ (parameters.gitopsRepoUrl | parseRepoUrl).owner }}
+          gitopsRepoName: ${{ (parameters.gitopsRepoUrl | parseRepoUrl).repo }}
     - id: publish
       name: Publish to GitHub
       action: publish:github

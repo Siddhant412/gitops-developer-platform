@@ -59,3 +59,15 @@ jobs:
           tags: |
             ${{ steps.image.outputs.name }}:latest
             ${{ steps.image.outputs.name }}:${{ github.sha }}
+
+      - name: Update GitOps repo
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITOPS_REPO_TOKEN: ${{ secrets.GITOPS_REPO_TOKEN }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -a
+          source .platform/gitops.env
+          set +a
+          export GITOPS_REPO="${GITOPS_REPO_OWNER}/${GITOPS_REPO_NAME}"
+          bash ./.github/scripts/update-gitops-repo.sh
