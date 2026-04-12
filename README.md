@@ -1,60 +1,279 @@
 # GitOps Developer Platform
 
-This project is an internal developer platform portfolio build, a Backstage-based portal that lets engineers create services from approved golden paths, register ownership as code, publish docs, and deploy through a governed GitOps workflow instead of hand-written infrastructure and Kubernetes YAML.
+An internal developer platform built with Backstage, GitHub Actions, Argo CD, Kubernetes, and a separate GitOps environment repository.
 
-## Target Outcome
+This project is not "just another app". It shows how a platform team can make service creation and delivery consistent, instead of having every engineer wire up CI, deployment config, ownership and docs manually.
 
-The platform should make a new service look like this:
+## What Problem This Solves
 
-1. A developer opens Backstage and chooses a template such as `Node API`, `Python Worker`, or `Docs Component`.
-2. Backstage scaffolds a new repository with starter code, `catalog-info.yaml`, TechDocs, CI, and deployment manifests.
-3. GitHub Actions runs tests, builds an image, and publishes artifacts.
-4. A GitOps repository receives deployment configuration updates.
-5. Argo CD syncs the desired state to Kubernetes.
-6. Backstage shows service ownership, docs, and runtime information in one place.
-7. Kyverno enforces platform rules such as labels, probes, image sources, and resource defaults.
+Without an internal platform, every new service requires repeated setup for CI, deployment, docs, and ownership.
 
-## Core Stack
+This project turns that into a standard flow:
 
-- Backstage for the developer portal, software catalog, templates, and TechDocs
-- GitHub + GitHub Actions for source control and CI
-- Kubernetes for runtime
-- Argo CD for GitOps CD
-- Terraform for infrastructure in the first portfolio version
-- Kyverno for policy and governance
+1. Create a service in Backstage.
+2. Generate the repo and metadata.
+3. Build and publish with GitHub Actions.
+4. Update the GitOps repo.
+5. Deploy with Argo CD.
+6. View status in Backstage.
 
-## Delivery Phases
+## Architecture
 
-### Phase 1: MVP
+### Control Plane
 
-- Bootstrap Backstage
-- Add Catalog, Scaffolder, TechDocs, and Kubernetes plugins
-- Create three golden path templates:
-  - `node-api`
-  - `python-worker`
-  - `docs-component`
-- Generate repos with starter code, docs, CI, Dockerfile, and Kustomize manifests
+- `Backstage` is the developer portal
+- `Software Catalog` stores ownership and service metadata
+- `Scaffolder` creates new repositories from approved templates
+- `TechDocs` keeps service docs close to code
 
-### Phase 2: GitOps Deployment
+### Delivery Plane
 
-- Add Argo CD and a separate GitOps repo
-- Have templates also create or update deployment config
-- Show deployment status and Kubernetes objects from the Backstage service page
+- `GitHub Actions` builds, tests, and publishes service images
+- `GHCR` stores published container images
+- a separate `GitOps environment repo` stores desired deployment state
 
-### Phase 3: Platform Provisioning
+### Runtime Plane
 
-- Add Terraform modules for shared platform resources
-- Provision namespaces and one or two backing services through code
-- Connect CI/CD outputs to provisioned runtime dependencies
+- `Argo CD` watches the GitOps repo and applies desired state
+- `Kubernetes` runs the workloads
+- `Backstage Kubernetes integration` surfaces runtime objects back to service owners
 
-### Phase 4: Governance and Multi-Tenancy
+## Repository Roles
 
-- Add Kyverno policies for labels, probes, resource limits, registries, and non-root containers
-- Add Argo CD AppProjects and team boundaries
-- Expose policy failures clearly in the platform workflow
+This project is designed around three repo types:
 
-## Repo Direction
+### 1. Platform Repo
 
-This repo acts as the platform control plane and local development environment, not as a generated service repository. Backstage source, template skeletons, platform bootstrap, catalog entities, policies, and local GitOps examples live here. Generated services should be created in separate repos.
+This repository, `gitops-developer-platform`, is the platform repo.
 
-The detailed build plan is in docs/build-plan.md
+It owns:
+
+- Backstage source
+- golden path templates
+- sample catalog entities
+- local bootstrap scripts
+- local development docs
+
+### 2. Service Repo
+
+Generated service repos are owned by service teams.
+
+Example:
+
+- [payments-api](https://github.com/Siddhant412/payments-api.git)
+
+They contain:
+
+- application source code
+- tests
+- Dockerfile
+- `catalog-info.yaml`
+- TechDocs
+- CI workflow
+- service deployment manifests that seed the GitOps repo
+
+### 3. GitOps Environment Repo
+
+A separate repo stores deployment desired state.
+
+Example:
+
+- [gitops-platform-environments](https://github.com/Siddhant412/gitops-platform-environments.git)
+
+It contains:
+
+- per-service deployment overlays
+- Argo CD `Application` manifests
+- shared environment bootstrap resources
+
+## Tech Stack
+
+- `Backstage` for portal, catalog, templates, and docs
+- `GitHub` for source control
+- `GitHub Actions` for CI
+- `GHCR` for image registry
+- `Kubernetes` for runtime
+- `kind` for local cluster development
+- `Argo CD` for GitOps CD
+- `Kustomize` for deployment overlays
+
+## Repository Layout
+
+```text
+.
+|-- backstage/                  # Backstage app
+|-- docs/                       # design notes and build plan
+|-- platform/
+|   |-- bootstrap/              # kind, Argo CD, and Backstage bootstrap helpers
+|   |-- catalog/                # seed catalog entities
+|   |-- gitops-examples/        # older in-repo GitOps examples
+|   |-- policies/               # policy placeholders
+|   |-- templates/              # golden path templates
+|   `-- terraform/              # provisioning placeholders
+`-- README.md
+```
+
+## Prerequisites
+
+You need the following installed locally:
+
+- `Node.js 24+`
+- `Yarn 4+`
+- `Docker Desktop`
+- `kubectl`
+- `kind`
+- `argocd`
+
+You also need:
+
+- A GitHub personal access token exported as `GITHUB_TOKEN` for Backstage repo creation
+- A separate GitOps repo such as [gitops-platform-environments](https://github.com/Siddhant412/gitops-platform-environments.git)
+
+## Local Setup
+
+### 1. Clone the platform repo
+
+```bash
+git clone https://github.com/Siddhant412/gitops-developer-platform.git
+cd gitops-developer-platform
+```
+
+### 2. Create or clone a separate GitOps environment repo
+
+Create a repo such as:
+
+- [gitops-platform-environments](https://github.com/Siddhant412/gitops-platform-environments.git)
+
+Clone it somewhere locally. It does not need to live inside this repo.
+
+### 3. Export `GITHUB_TOKEN`
+
+Backstage uses this to publish generated repositories to GitHub.
+
+```bash
+export GITHUB_TOKEN=<your-github-token>
+```
+
+### 4. Install Backstage dependencies
+
+```bash
+cd backstage
+PATH=/opt/homebrew/bin:$PATH yarn install
+cd ..
+```
+
+### 5. Bootstrap local Kubernetes and Argo CD
+
+```bash
+./platform/bootstrap/bootstrap-local.sh
+```
+
+This creates a local `kind` cluster and installs Argo CD.
+
+### 6. Apply the GitOps environment repo bootstrap
+
+From your separate GitOps repo:
+
+```bash
+cd /path/to/gitops-platform-environments
+kubectl apply -k bootstrap --context kind-idp-dev
+```
+
+This creates:
+
+- `dev` and `staging` namespaces
+- the `platform-dev` Argo CD project
+- the `platform-environments-root` Argo CD root app
+
+After this, Argo CD can auto-discover service `Application` manifests added to `argocd/applications/`.
+
+### 7. Configure Backstage Kubernetes access
+
+Back in the platform repo:
+
+```bash
+cd /path/to/gitops-developer-platform
+./platform/bootstrap/backstage/configure-local-kubernetes.sh
+```
+
+### 8. Start Backstage
+
+```bash
+cd backstage
+PATH=/opt/homebrew/bin:$PATH yarn start
+```
+
+Backstage local URLs:
+
+- UI: `http://localhost:3000`
+- backend: `http://localhost:7007`
+
+Argo CD local URLs:
+
+- UI: `https://localhost:8080`
+
+To open Argo CD:
+
+```bash
+./platform/bootstrap/argocd/port-forward.sh
+./platform/bootstrap/argocd/get-admin-password.sh
+```
+
+## How To Create and Run a Service
+
+### 1. Open Backstage
+
+Go to:
+
+- `http://localhost:3000`
+
+### 2. Use the `Node API` template
+
+Go to `Create` and choose `Node API`.
+
+Provide:
+
+- service name
+- description
+- owner
+- system
+- service repo URL
+- GitOps environment repo URL
+
+### 3. Let Backstage create the service repo
+
+Backstage will publish a new GitHub repository containing:
+
+- starter Fastify service
+- tests
+- Dockerfile
+- `catalog-info.yaml`
+- TechDocs starter docs
+- CI workflow
+- Kustomize deployment manifests
+
+### 4. Add `GITOPS_REPO_TOKEN` in the generated service repo
+
+In the generated service repo, add a GitHub Actions secret:
+
+- `GITOPS_REPO_TOKEN`
+
+It must have write access to the GitOps environment repo so the service CI can update deployment desired state.
+
+### 5. Push to `main`
+
+On a successful `main` build, the generated service repo will:
+
+- run tests
+- publish an image to GHCR
+- seed `apps/<service>/` in the GitOps repo if needed
+- create Argo CD child applications if they are missing
+- update the `dev` overlay image tag to the new commit SHA
+
+### 6. Watch the deployment
+
+You can observe the system in three places:
+
+- `GitHub Actions` in the service repo
+- `Argo CD` for sync and health
+- `Backstage` for CI/CD and Kubernetes runtime tabs
