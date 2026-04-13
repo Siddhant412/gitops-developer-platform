@@ -1,0 +1,30 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-non-root
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: Deployment
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-non-root-security-context
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - dev
+                - staging
+      validate:
+        message: "Containers in platform namespaces must run as non-root, disallow privilege escalation, and drop ALL capabilities."
+        foreach:
+          - list: "request.object.spec.containers[]"
+            pattern:
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - "ALL"

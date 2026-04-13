@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ghcr-images
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: Deployment
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: restrict-images-to-ghcr
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - dev
+                - staging
+      validate:
+        message: "Containers in platform namespaces must use images from ghcr.io."
+        foreach:
+          - list: "request.object.spec.containers[]"
+            pattern:
+              image: "ghcr.io/*"

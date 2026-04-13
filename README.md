@@ -15,7 +15,8 @@ This project turns that into a standard flow:
 3. Build and publish with GitHub Actions.
 4. Update the GitOps repo.
 5. Deploy with Argo CD.
-6. View status in Backstage.
+6. Enforce guardrails with Kyverno.
+7. View status in Backstage.
 
 ## Architecture
 
@@ -37,6 +38,11 @@ This project turns that into a standard flow:
 - `Argo CD` watches the GitOps repo and applies desired state
 - `Kubernetes` runs the workloads
 - `Backstage Kubernetes integration` surfaces runtime objects back to service owners
+
+### Governance Plane
+
+- `Kyverno` enforces workload guardrails in app namespaces
+- policy failures are surfaced as part of the platform workflow instead of becoming tribal knowledge
 
 ## Repository Roles
 
@@ -96,6 +102,7 @@ It contains:
 - `kind` for local cluster development
 - `Argo CD` for GitOps CD
 - `Kustomize` for deployment overlays
+- `Kyverno` for Kubernetes guardrails
 
 ## Repository Layout
 
@@ -107,7 +114,7 @@ It contains:
 |   |-- bootstrap/              # kind, Argo CD, and Backstage bootstrap helpers
 |   |-- catalog/                # seed catalog entities
 |   |-- gitops-examples/        # older in-repo GitOps examples
-|   |-- policies/               # policy placeholders
+|   |-- policies/               # Kyverno policies and demo manifests
 |   |-- templates/              # golden path templates
 |   `-- terraform/              # provisioning placeholders
 `-- README.md
@@ -123,6 +130,7 @@ You need the following installed locally:
 - `kubectl`
 - `kind`
 - `argocd`
+- a running Docker daemon
 
 You also need:
 
@@ -162,13 +170,13 @@ PATH=/opt/homebrew/bin:$PATH yarn install
 cd ..
 ```
 
-### 5. Bootstrap local Kubernetes and Argo CD
+### 5. Bootstrap local Kubernetes, Argo CD and Kyverno
 
 ```bash
 ./platform/bootstrap/bootstrap-local.sh
 ```
 
-This creates a local `kind` cluster and installs Argo CD.
+This creates a local `kind` cluster, installs Argo CD, installs Kyverno and applies the baseline platform guardrails.
 
 ### 6. Apply the GitOps environment repo bootstrap
 
@@ -187,7 +195,14 @@ This creates:
 
 After this, Argo CD can auto-discover service `Application` manifests added to `argocd/applications/`.
 
-### 7. Configure Backstage Kubernetes access
+### 7. Verify Kyverno is installed
+
+```bash
+kubectl get pods -n kyverno --context kind-idp-dev
+kubectl get clusterpolicies --context kind-idp-dev
+```
+
+### 8. Configure Backstage Kubernetes access
 
 Back in the platform repo:
 
@@ -196,7 +211,7 @@ cd /path/to/gitops-developer-platform
 ./platform/bootstrap/backstage/configure-local-kubernetes.sh
 ```
 
-### 8. Start Backstage
+### 9. Start Backstage
 
 ```bash
 cd backstage
@@ -276,4 +291,5 @@ You can observe the system in three places:
 
 - `GitHub Actions` in the service repo
 - `Argo CD` for sync and health
+- `Kyverno` for policy failures and policy reports
 - `Backstage` for CI/CD and Kubernetes runtime tabs

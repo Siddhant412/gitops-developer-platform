@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-payments-api
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: bad-payments-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bad-payments-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bad-payments-api
+    spec:
+      containers:
+        - name: bad-payments-api
+          image: docker.io/library/nginx:latest
+          ports:
+            - containerPort: 8080

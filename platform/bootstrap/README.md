@@ -4,6 +4,7 @@ This directory holds local environment bootstrap assets.
 
 - `kind/` for local Kubernetes cluster creation
 - `argocd/` for Argo CD install and application bootstrap
+- `kyverno/` for policy engine install and guardrail bootstrap
 - `backstage/` for local Backstage Kubernetes access and deployment manifests used outside local `yarn start`
 
 ## Local Bootstrap Flow
@@ -14,10 +15,11 @@ This directory holds local environment bootstrap assets.
    ./platform/bootstrap/kind/create-cluster.sh
    ```
 
-2. Install Argo CD and apply the local platform bootstrap resources:
+2. Install Argo CD and Kyverno guardrails:
 
    ```bash
    ./platform/bootstrap/argocd/install.sh
+   ./platform/bootstrap/kyverno/install.sh
    ```
 
 3. Open the Argo CD UI:
@@ -39,9 +41,16 @@ This directory holds local environment bootstrap assets.
    kubectl apply -k bootstrap --context kind-idp-dev
    ```
 
-6. After that, new services only need to commit Argo `Application` manifests into `argocd/applications/`; the root app discovers them automatically.
+6. Verify Kyverno is active:
 
-7. Configure local Backstage Kubernetes access:
+   ```bash
+   kubectl get pods -n kyverno --context kind-idp-dev
+   kubectl get clusterpolicies --context kind-idp-dev
+   ```
+
+7. After that, new services only need to commit Argo `Application` manifests into `argocd/applications/`; the root app discovers them automatically.
+
+8. Configure local Backstage Kubernetes access:
 
    ```bash
    ./platform/bootstrap/backstage/configure-local-kubernetes.sh

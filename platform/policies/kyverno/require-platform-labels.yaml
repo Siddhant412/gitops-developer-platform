@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-platform-labels
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-deployment-and-pod-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              namespaces:
+                - dev
+                - staging
+      validate:
+        message: "Deployments in platform namespaces must set app.kubernetes.io/name, app.kubernetes.io/component, and backstage.io/kubernetes-id labels on both the workload and pod template."
+        pattern:
+          metadata:
+            labels:
+              app.kubernetes.io/name: "?*"
+              app.kubernetes.io/component: "?*"
+              backstage.io/kubernetes-id: "?*"
+          spec:
+            template:
+              metadata:
+                labels:
+                  app.kubernetes.io/name: "?*"
+                  app.kubernetes.io/component: "?*"
+                  backstage.io/kubernetes-id: "?*"
