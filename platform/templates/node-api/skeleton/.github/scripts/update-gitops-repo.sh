@@ -7,6 +7,12 @@ set -euo pipefail
 : "${SERVICE_NAME:?SERVICE_NAME is required}"
 : "${IMAGE_TAG:?IMAGE_TAG is required}"
 
+IMAGE_NAME="${IMAGE_NAME:-${SERVICE_IMAGE:-}}"
+if [[ -z "${IMAGE_NAME}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
+  IMAGE_NAME="ghcr.io/$(printf '%s' "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+fi
+: "${IMAGE_NAME:?IMAGE_NAME or SERVICE_IMAGE is required}"
+
 SOURCE_REPO_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 TARGET_APP_DIR="apps/${SERVICE_NAME}"
 TARGET_DEV_OVERLAY="${TARGET_APP_DIR}/overlays/dev/kustomization.yaml"
@@ -100,12 +106,13 @@ for item in expected:
 path.write_text("\n".join(lines) + "\n")
 PY
 
-python3 - "${TARGET_DEV_OVERLAY}" "${IMAGE_TAG}" <<'PY'
+python3 - "${TARGET_DEV_OVERLAY}" "${IMAGE_TAG}" "${IMAGE_NAME}" <<'PY'
 from pathlib import Path
 import sys
 
 path = Path(sys.argv[1])
 tag = sys.argv[2]
+image = sys.argv[3]
 lines = path.read_text().splitlines()
 
 for index, line in enumerate(lines):
@@ -115,7 +122,13 @@ for index, line in enumerate(lines):
         lines[index] = f"{indent}newTag: {tag}"
         break
 else:
-    raise SystemExit(f"Could not find newTag in {path}")
+    if lines and lines[-1] != "":
+        lines.append("")
+    lines.extend([
+        "images:",
+        f"  - name: {image}",
+        f"    newTag: {tag}",
+    ])
 
 path.write_text("\n".join(lines) + "\n")
 PY

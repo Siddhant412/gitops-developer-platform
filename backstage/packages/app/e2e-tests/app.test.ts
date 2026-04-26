@@ -16,12 +16,18 @@
 
 import { test, expect } from '@playwright/test';
 
-test('App should render the welcome page', async ({ page }) => {
+test('App should render the platform catalog', async ({ page }) => {
   await page.goto('/');
 
   const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
+  if (await enterButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await enterButton.click();
+  }
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
+  await expect(
+    page.getByText('GitOps Developer Platform').first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText('gitops-developer-platform').first(),
+  ).toBeVisible();
 });

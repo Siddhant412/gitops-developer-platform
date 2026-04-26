@@ -70,4 +70,5 @@ jobs:
           source .platform/gitops.env
           set +a
           export GITOPS_REPO="${GITOPS_REPO_OWNER}/${GITOPS_REPO_NAME}"
+          export IMAGE_NAME="${SERVICE_IMAGE}"
           bash ./.github/scripts/update-gitops-repo.sh
