@@ -1,8 +1,18 @@
 # GitOps Developer Platform
 
-An internal developer platform built with Backstage, GitHub Actions, Argo CD, Kubernetes, and a separate GitOps environment repository.
+An internal developer platform that turns new-service creation into a repeatable golden path.
 
-This project is not "just another app". It shows how a platform team can make service creation and delivery consistent, instead of having every engineer wire up CI, deployment config, ownership and docs manually.
+Backstage scaffolds a service repo, GitHub Actions builds and publishes the image, CI updates a separate GitOps environment repo, Argo CD deploys to Kubernetes, Kyverno enforces guardrails, and Backstage shows ownership, docs, CI/CD, and runtime status.
+
+This project is not "just another app". It shows how a platform team can make service creation and delivery consistent instead of asking every engineer to wire up CI, deployment config, ownership, docs, and runtime visibility by hand.
+
+## Project Highlights
+
+- Built a local internal developer platform with `Backstage`, `Kubernetes`, `Argo CD`, `GitHub Actions`, `GHCR`, `Kustomize`, and `Kyverno`.
+- Created a golden path `Node API` template that scaffolds a production-shaped Fastify service with tests, Dockerfile, CI, catalog metadata, TechDocs, and Kubernetes manifests.
+- Implemented a GitOps delivery flow where service CI writes desired state to a separate environment repo and Argo CD deploys the change.
+- Added Kubernetes guardrails with Kyverno for required labels, GHCR-only images, health probes, resource requests/limits, and non-root containers.
+- Customized Backstage with catalog seed data, scaffolder integration, TechDocs, GitHub Actions visibility, and Kubernetes runtime visibility.
 
 ## What Problem This Solves
 
@@ -20,29 +30,37 @@ This project turns that into a standard flow:
 
 ## Architecture
 
+![Architecture Diagram](assets/architecture-diagram.png)
+
 ### Control Plane
 
-- `Backstage` is the developer portal
-- `Software Catalog` stores ownership and service metadata
-- `Scaffolder` creates new repositories from approved templates
-- `TechDocs` keeps service docs close to code
+- `Backstage` is the developer portal where engineers create services
+- `Software Catalog` stores ownership, system, and runtime metadata
+- `Scaffolder` publishes service repositories from approved templates
+- `TechDocs` keeps generated service documentation close to code
 
 ### Delivery Plane
 
-- `GitHub Actions` builds, tests, and publishes service images
-- `GHCR` stores published container images
-- a separate `GitOps environment repo` stores desired deployment state
+- `GitHub Actions` tests the service, builds the image, and publishes to `GHCR`
+- the same workflow commits deployment desired state to the GitOps environment repo
+- the GitOps repo stores Kustomize overlays and Argo CD `Application` manifests
 
 ### Runtime Plane
 
-- `Argo CD` watches the GitOps repo and applies desired state
-- `Kubernetes` runs the workloads
-- `Backstage Kubernetes integration` surfaces runtime objects back to service owners
+- `Argo CD` watches the GitOps repo and reconciles the cluster to the desired state
+- `Kyverno` evaluates incoming manifests before workloads are admitted
+- `Kubernetes` runs the resulting `dev` and `staging` workloads
 
 ### Governance Plane
 
 - `Kyverno` enforces workload guardrails in app namespaces
 - policy failures are surfaced as part of the platform workflow instead of becoming tribal knowledge
+
+### Visibility Plane
+
+- `catalog-info.yaml` and TechDocs flow back into the Backstage service page
+- GitHub Actions run status is shown in Backstage
+- Kubernetes runtime objects are surfaced back to service owners
 
 ## Repository Roles
 
@@ -109,7 +127,6 @@ It contains:
 ```text
 .
 |-- backstage/                  # Backstage app
-|-- docs/                       # design notes and build plan
 |-- platform/
 |   |-- bootstrap/              # kind, Argo CD, and Backstage bootstrap helpers
 |   |-- catalog/                # seed catalog entities
